@@ -1,3 +1,5 @@
+export MASTERW, set_MASTERW, print_inmw, println_inmw, print_ifmw, println_ifmw, 
+       tagprint_inmw, tagprintln_inmw, tagprint_ifmw, tagprintln_ifmw
 """
     The id of the master worker
 """

@@ -1,3 +1,5 @@
+export load_data, save_data
+
 function load_data(src_file; print_fun = println, verbose = true)
     data = wload(src_file)[DATA_KEY]
     verbose && print_fun(relpath(src_file), " loaded!!!, size: ", filesize(src_file), " bytes")

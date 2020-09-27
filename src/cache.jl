@@ -2,8 +2,11 @@ const TEMP_CACHE_FILE_PREFIX = "temp_cache"
 CACHE_DIR = pwd()
 DATA_KEY = :dat
 
-set_cache_dir(cache_dir) = (global CACHE_DIR = cache_dir)
+export set_cache_dir, temp_cache_file, save_cache,
+       load_cache, delete_temp_caches, CACHE_DIR
 
+set_cache_dir(cache_dir) = (global CACHE_DIR = cache_dir)
+ 
 temp_cache_file(hashtable, cache_dir = CACHE_DIR, ext = ".jld") = 
     joinpath(cache_dir, string(TEMP_CACHE_FILE_PREFIX, "___", hash(hashtable), ext))
 

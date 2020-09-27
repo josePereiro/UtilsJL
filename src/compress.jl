@@ -1,3 +1,4 @@
+export compressed_copy, uncompressed_copy
 """
     Returns a copy of the given data. If possible the object is
     stored in a more compacted type, e.i: array -> sparse
