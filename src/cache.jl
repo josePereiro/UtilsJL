@@ -3,9 +3,12 @@ CACHE_DIR = pwd()
 DATA_KEY = :dat
 
 export set_cache_dir, temp_cache_file, save_cache,
-       load_cache, delete_temp_caches, CACHE_DIR
+       load_cache, delete_temp_caches, CACHE_DIR, 
+       backup_temp_cache, is_temp_cache_file
 
 set_cache_dir(cache_dir) = (global CACHE_DIR = cache_dir)
+
+is_temp_cache_file(file) = startswith(file, TEMP_CACHE_FILE_PREFIX)
  
 temp_cache_file(hashtable, cache_dir = CACHE_DIR, ext = ".jld") = 
     joinpath(cache_dir, string(TEMP_CACHE_FILE_PREFIX, "___", hash(hashtable), ext))
@@ -69,5 +72,16 @@ function delete_temp_caches(cache_dir = CACHE_DIR; verbose = true, print_fun = p
         tc = joinpath(cache_dir, tc)
         rm(tc, force = true)
         verbose && print_fun(relpath(tc), " deleted!!!")
+    end
+end
+
+function backup_temp_cache(cache_dir, backup_dir = cache_dir * "_backup")
+    files = readdir(cache_dir)
+    !isdir(backup_dir) && mkpath(backup_dir)
+    for file in files
+        !is_temp_cache_file(file) && continue
+        src_file, dest_file = joinpath(cache_dir, file), joinpath(backup_dir, file)
+        isfile(dest_file) && mtime(src_file) < mtime(dest_file) && continue
+        cp(src_file, dest_file; force = true, follow_symlinks = true)
     end
 end
