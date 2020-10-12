@@ -1,6 +1,6 @@
 const TEMP_CACHE_FILE_PREFIX = "temp_cache"
 CACHE_DIR = pwd()
-DATA_KEY = :dat
+const DATA_KEY = :dat
 
 export set_cache_dir, temp_cache_file, save_cache,
        load_cache, delete_temp_caches, CACHE_DIR, 
