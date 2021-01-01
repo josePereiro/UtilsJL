@@ -14,5 +14,6 @@ module UtilsJL
     include("cache.jl")
     include("save_load_data.jl")
     include("mypkg_generate.jl")
+    include("DictTree.jl")
 
 end # module

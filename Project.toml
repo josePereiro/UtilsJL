@@ -1,7 +1,7 @@
 name = "UtilsJL"
 uuid = "1d417f3e-fd42-11ea-18da-dda57c9b97b2"
 authors = ["josePereiro <jose.pereiro.lab@gmail.com>"]
-version = "0.3.0"
+version = "0.4.0"
 
 [deps]
 BSON = "fbb218c0-5317-5bc6-957e-2ee96dd4b1f0"
@@ -11,3 +11,12 @@ DrWatson = "634d3b9d-ee7a-5ddf-bec9-22491ea816e1"
 PkgTemplates = "14b8a8f1-9102-5b29-a752-f990bacb7fe1"
 Serialization = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+
+[compat]
+julia = "1.5"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
