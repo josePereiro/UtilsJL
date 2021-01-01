@@ -1,4 +1,5 @@
 ## -------------------------------------------------------------------
+export DictTree
 struct DictTree
     dict::Dict{Any, Any}
     DictTree() = new(Dict())
@@ -6,14 +7,26 @@ struct DictTree
 end
 
 ## -------------------------------------------------------------------
-Base.haskey(pd::DictTree, k) = haskey(pd.dict, k)
-Base.get!(pd::DictTree, k, d) = get!(pd.dict, k, d)
+function Base.haskey(pd::DictTree, k, ks...) 
+    haskey(pd.dict, k) || return false
+    dict = pd.dict[k]
+    dict isa Dict || return false
+    isempty(ks) && return true
+    for ki in ks[begin:end - 1]
+        haskey(dict, ki) || return false
+        dict = dict[ki]
+        dict isa Dict || return false
+    end
+    return haskey(dict, last(ks))
+end
+Base.get!(pd::DictTree, defl, k, ks...) = haskey(pd, k, ks...) ? pd[k, ks...] : (pd[k, ks...] = defl)
 
 ## -------------------------------------------------------------------
 ITERABLE = Union{AbstractVecOrMat, AbstractRange}
 _extract_keys(k, ks...) = tuple([ki isa ITERABLE ? ki : [ki] for ki in tuple(k, ks...)]...)
 _get_dict!(d::Dict, k) = (haskey(d, k) && d[k] isa Dict) ? d[k] : (d[k] = Dict{Any, Any}())
 
+## -------------------------------------------------------------------
 Base.getindex(pd::DictTree, k::ITERABLE) = [pd.dict[ki] for ki in k]
 function Base.getindex(pd::DictTree, k, ks...) 
     if isempty(ks) 
