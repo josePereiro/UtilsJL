@@ -2,10 +2,6 @@ const TEMP_CACHE_FILE_PREFIX = "temp_cache"
 CACHE_DIR = pwd()
 const DATA_KEY = :dat
 
-export set_cache_dir, temp_cache_file, save_cache,
-       load_cache, delete_temp_caches, CACHE_DIR, 
-       backup_temp_cache, is_temp_cache_file
-
 set_cache_dir(cache_dir) = (global CACHE_DIR = cache_dir)
 
 is_temp_cache_file(file) = startswith(file, TEMP_CACHE_FILE_PREFIX)

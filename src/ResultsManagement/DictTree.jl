@@ -1,5 +1,4 @@
 ## -------------------------------------------------------------------
-export DictTree
 struct DictTree
     dict::Dict{Any, Any}
     DictTree() = new(Dict())
@@ -20,9 +19,11 @@ function Base.haskey(pd::DictTree, k, ks...)
     return haskey(dict, last(ks))
 end
 Base.get!(pd::DictTree, defl, k, ks...) = haskey(pd, k, ks...) ? pd[k, ks...] : (pd[k, ks...] = defl)
+Base.keys(pd::DictTree)  = keys(pd.dict)
+Base.keys(pd::DictTree, k, ks...)  = keys(pd[k, ks...])
 
 ## -------------------------------------------------------------------
-ITERABLE = Union{AbstractVecOrMat, AbstractRange}
+const ITERABLE = Union{AbstractVecOrMat, AbstractRange}
 _extract_keys(k, ks...) = tuple([ki isa ITERABLE ? ki : [ki] for ki in tuple(k, ks...)]...)
 _get_dict!(d::Dict, k) = (haskey(d, k) && d[k] isa Dict) ? d[k] : (d[k] = Dict{Any, Any}())
 

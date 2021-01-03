@@ -1,5 +1,3 @@
-export sparsity, logspace, to_symbol_dict, struct_to_dict, err_str
-
 """
     Give the percent [0-1] of zero elements
 """

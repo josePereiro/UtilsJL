@@ -1,8 +1,9 @@
+# Based in DrWatson
+
 const GIT_COMMIT_KEY = :gitcommit
 const GIT_PATCH_KEY = :gitpatch
 const DIRTY_SUFFIX = "_dirty"
-
-export load_data, save_data, wload, wsave, load_commit_hash, load_commit_short_hash, load_patch
+const SHORT_HASH_LENGTH = 7
 
 function load_data(src_file; print_fun = println, verbose = true)
     file_dat = wload(src_file)
@@ -23,15 +24,11 @@ end
 
 load_commit_hash(src_file) = get(wload(src_file), GIT_COMMIT_KEY, "")
 
-load_commit_short_hash(src_file, l = 7) = cut_hash(load_commit_hash(src_file), l)
+load_commit_short_hash(src_file, l = SHORT_HASH_LENGTH) = cut_hash(load_commit_hash(src_file), l)
 
-function cut_hash(commit_hash, l = 7)
-    if endswith(commit_hash, DIRTY_SUFFIX)
-        commit_hash = commit_hash[1:min(7, end)] * DIRTY_SUFFIX
-    elseif !isempty(commit_hash)
-        commit_hash = commit_hash[1:min(7, end)]
-    end
-    commit_hash
+function cut_hash(commit_hash, l = SHORT_HASH_LENGTH)
+    short_hash = first(commit_hash, l)
+    endswith(commit_hash, DIRTY_SUFFIX) ? string(short_hash, DIRTY_SUFFIX) : short_hash
 end
 
 load_patch(src_file) = get(wload(src_file), GIT_PATCH_KEY, "")

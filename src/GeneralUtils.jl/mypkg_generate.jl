@@ -79,4 +79,5 @@ Temporary Items
     git = Git(ignore = [gitignore], manifest = true)
     t = Template(user = "josePereiro", julia = v"1.5.0", plugins = [git])
     generate(t, pkgname)
+    
 end

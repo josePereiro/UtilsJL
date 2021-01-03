@@ -1,5 +1,3 @@
-export MASTERW, set_MASTERW, print_inmw, println_inmw, print_ifmw, println_ifmw, 
-       tagprint_inmw, tagprintln_inmw, tagprint_ifmw, tagprintln_ifmw
 """
     The id of the master worker
 """
@@ -15,10 +13,7 @@ println_ifmw(ss...) = myid() == MASTERW ? Core.println(ss...) : nothing
 function wtag(io::IO)
     ws = min(displaysize(io) |> last, 80) 
     return lpad(
-        string(
-            " Worker ", myid(), " (", getpid(), ")",
-            " [", Time(now()), "] "
-        ), 
+        string( " Worker ", myid(), " (", getpid(), ") [", Time(now()), "] "), 
         ws, "-"
     )
 end
