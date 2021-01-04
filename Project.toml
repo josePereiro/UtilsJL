@@ -1,7 +1,7 @@
 name = "UtilsJL"
 uuid = "1d417f3e-fd42-11ea-18da-dda57c9b97b2"
 authors = ["josePereiro <jose.pereiro.lab@gmail.com>"]
-version = "0.4.4"
+version = "0.4.5"
 
 [deps]
 BSON = "fbb218c0-5317-5bc6-957e-2ee96dd4b1f0"
