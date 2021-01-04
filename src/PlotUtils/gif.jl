@@ -23,13 +23,12 @@ function _make_mat(imgs)
 end
 
 ## ----------------------------------------------------------------------------
-function save_gif(ps::Vector{P}, fn::AbstractString; fps = 10.0) where {P <: AbstractPlot}
+function save_gif(ps::Vector, fn::AbstractString = string(tempname(), ".gif"); fps = 10.0) 
     !endswith(fn, ".gif") && error("filename must end with .gif")
     imgs = plot_to_img.(ps)
     mat = _make_mat(imgs)
     FileIO.save(fn, mat; fps)
     fn
 end
-save_gif(fn::AbstractString, ps::Vector{P}; fps = 10.0) where {P <: AbstractPlot} = save_gif(ps, fn; fps)
-save_gif(ps::Vector{P}; fps = 10.0) where {P <: AbstractPlot} = save_gif(ps, string(tempname(), ".gif"); fps)
+save_gif(fn::AbstractString, ps::Vector; fps = 10.0) = save_gif(ps, fn; fps)
 
