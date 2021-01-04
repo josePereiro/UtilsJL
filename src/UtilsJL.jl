@@ -8,10 +8,16 @@ module UtilsJL
     import DrWatson: wload, tagsave, wsave, savename
     import PkgTemplates: Git, Template, generate
     import Printf: @sprintf
+    import Plots: savefig, AbstractPlot
+    import FixedPointNumbers: N0f8
+    import Colors: RGB
+    import Images
+    import FileIO
 
     include("DistrubutedUtils/DistributedUtils.jl")
     include("GeneralUtils.jl/GeneralUtils.jl")
     include("ResultsManagement/ResultsManagement.jl")
+    include("PlotUtils/PlotUtils.jl")
 
     export MASTERW, set_MASTERW, print_inmw, println_inmw, print_ifmw, println_ifmw, 
        tagprint_inmw, tagprintln_inmw, tagprint_ifmw, tagprintln_ifmw
@@ -29,5 +35,7 @@ module UtilsJL
     export compressed_copy, uncompressed_copy
 
     export DictTree
+
+    export save_gif
 
 end # module
