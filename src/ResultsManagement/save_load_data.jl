@@ -4,6 +4,7 @@ const GIT_COMMIT_KEY = :gitcommit
 const GIT_PATCH_KEY = :gitpatch
 const DIRTY_SUFFIX = "_dirty"
 const SHORT_HASH_LENGTH = 7
+const ERROR_LOGGER = SimpleLogger(stdout, Logging.Error)
 
 function load_data(src_file; print_fun = println, verbose = true)
     file_dat = wload(src_file)
@@ -17,9 +18,12 @@ function load_data(src_file; print_fun = println, verbose = true)
 end
 
 function save_data(src_file, data; verbose = true, print_fun = println, tagsave_kwargs...)
-    data = tagsave(src_file, Dict(DATA_KEY => data); tagsave_kwargs...)
-    verbose && print_fun(relpath(src_file), " saved!!!, size: ", filesize(src_file), " bytes")
-    return data
+    L = verbose ? global_logger() : ERROR_LOGGER
+    with_logger(L) do
+        data = tagsave(src_file, Dict(DATA_KEY => data); tagsave_kwargs...)
+        verbose && print_fun(relpath(src_file), " saved!!!, size: ", filesize(src_file), " bytes")
+        return data
+    end
 end
 
 load_commit_hash(src_file) = get(wload(src_file), GIT_COMMIT_KEY, "")

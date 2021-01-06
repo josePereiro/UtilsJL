@@ -13,6 +13,8 @@ module UtilsJL
     import Colors: RGB
     import Images
     import FileIO
+    import Logging
+    import Logging: SimpleLogger, global_logger, with_logger
 
     include("DistrubutedUtils/DistributedUtils.jl")
     include("GeneralUtils.jl/GeneralUtils.jl")
