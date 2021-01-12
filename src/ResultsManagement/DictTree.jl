@@ -25,6 +25,7 @@ function Base.haskey(pd::DictTree, k, ks...)
 end
 
 Base.get!(pd::DictTree, defl, k, ks...) = haskey(pd, k, ks...) ? pd[k, ks...] : (pd[k, ks...] = defl)
+Base.get(pd::DictTree, defl, k, ks...) = haskey(pd, k, ks...) ? pd[k, ks...] : defl
 Base.keys(pd::DictTree)  = keys(pd.dict)
 Base.keys(pd::DictTree, k, ks...)  = keys(pd[k, ks...])
 
