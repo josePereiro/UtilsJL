@@ -4,10 +4,10 @@
 MASTERW = 1
 set_MASTERW(w) = (global MASTERW = w)
 
-print_inmw(ss...) = (remotecall_wait(Core.print, MASTERW, ss...); nothing)
-println_inmw(ss...) = (remotecall_wait(Core.println, MASTERW, ss...); nothing)
-print_ifmw(ss...) = myid() == MASTERW ? Core.print(ss...) : nothing
-println_ifmw(ss...) = myid() == MASTERW ? Core.println(ss...) : nothing
+print_inmw(ss...) = (remotecall_wait(Base.print, MASTERW, ss...); nothing)
+println_inmw(ss...) = (remotecall_wait(Base.println, MASTERW, ss...); nothing)
+print_ifmw(ss...) = myid() == MASTERW ? Base.print(ss...) : nothing
+println_ifmw(ss...) = myid() == MASTERW ? Base.println(ss...) : nothing
 
 
 function wtag(io::IO)
