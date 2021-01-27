@@ -15,11 +15,13 @@ module UtilsJL
    import FileIO
    import Logging
    import Logging: SimpleLogger, global_logger, with_logger
+   import ProgressMeter: ProgressThresh, Progress, next!, finish!, update!
 
    include("DistrubutedUtils/DistributedUtils.jl")
    include("GeneralUtils.jl/GeneralUtils.jl")
    include("ResultsManagement/ResultsManagement.jl")
    include("PlotUtils/PlotUtils.jl")
+   include("SimulationUtils/SimulationUtils.jl")
 
    export MASTERW, set_MASTERW, print_inmw, println_inmw, print_ifmw, println_ifmw, 
       tagprint_inmw, tagprintln_inmw, tagprint_ifmw, tagprintln_ifmw
