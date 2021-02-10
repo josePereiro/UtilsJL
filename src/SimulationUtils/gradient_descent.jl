@@ -83,22 +83,19 @@ function grad_desc(f;
         ϵᵢ = Err(fᵢ)
         sense *= ϵᵢ > ϵᵢ₋₁ ? -1.0 : 1.0
         Δx = sense * maxΔ * ϵᵢ
-        xᵢ += Δx
-
+        
         # callback
         ret, val = oniter(it, fᵢ, xᵢ, Δx)
         ret && return val
         
-        maxϵᵢ = maximum(ϵᵢ)
-        maxϵᵢ < th && break
-
-        xᵢ₋₁ =  xᵢ
+        ϵᵢ < th && break
+        
+        xᵢ += Δx
         ϵᵢ₋₁ = ϵᵢ
 
-        verbose && update!(prog, maxϵᵢ; showvalues = vcat(
+        verbose && update!(prog, ϵᵢ; showvalues = vcat(
                 [
                     ("it", it),
-                    ("maxϵᵢ", maxϵᵢ),
                     ("ϵᵢ", ϵᵢ),
                     ("sense", sense),
                     ("xᵢ", xᵢ),
