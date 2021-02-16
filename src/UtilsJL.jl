@@ -5,7 +5,8 @@ module UtilsJL
    import SparseArrays: AbstractSparseArray, sparse, issparse
    import BSON
    import Serialization: serialize, deserialize
-   import DrWatson: wload, tagsave, wsave, savename
+   import DrWatson
+   const DW = DrWatson
    import PkgTemplates: Git, Template, generate
    import Printf: @sprintf
    import Plots: savefig, AbstractPlot
@@ -26,7 +27,7 @@ module UtilsJL
    export MASTERW, set_MASTERW, print_inmw, println_inmw, print_ifmw, println_ifmw, 
       tagprint_inmw, tagprintln_inmw, tagprint_ifmw, tagprintln_ifmw
 
-   export load_data, save_data, wload, wsave, load_commit_hash, load_commit_short_hash, load_patch
+   export load_data, save_data, load_commit_hash, load_commit_short_hash, load_patch
 
    export mysavename
 

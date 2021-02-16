@@ -69,3 +69,4 @@ function make_grid(ps::Vector{T};
     imgs = plot_to_img.(ps)
     make_grid(imgs; layout, margin, tofill)
 end
+

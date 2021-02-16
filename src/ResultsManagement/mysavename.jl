@@ -6,5 +6,5 @@ function mysavename(name, ext = ""; c...)
             d[k] = abs(log10(abs(v))) > 3 ? sci(v) : v
         end
     end
-    savename(name, d, ext)
+    DW.savename(name, d, ext)
 end

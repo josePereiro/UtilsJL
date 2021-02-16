@@ -34,14 +34,16 @@ function save_cache(hashtable, data; cache_dir = CACHE_DIR, headline = "CACHE SA
     end
 end    
 
-function load_cache(hashtable; cache_dir = CACHE_DIR, headline = "CACHE LOADED",
+function load_cache(hashtable, dflt = nothing; 
+        cache_dir = CACHE_DIR, 
+        headline = "CACHE LOADED",
         verbose = true, onerr::Function = (err) -> rethrow(err),
         print_fun = tagprintln_inmw)
 
+    data = dflt
     tcache_file = temp_cache_file(hashtable, cache_dir) |> relpath
-    !isfile(tcache_file) && return nothing
+    !isfile(tcache_file) && return data
     
-    data = nothing
     try
         data = deserialize(tcache_file)[DATA_KEY]
         verbose && print_fun(headline, 
