@@ -3,8 +3,8 @@ function group_files(keystone, dir;
     )
     files = Dict()
     for filename in readdir(dir) |> sort
-        name, params, ext = DW.parse_savename(filename)
         filter(filename) && continue
+        name, params, ext = DW.parse_savename(filename)
 
         !haskey(params, keystone) && continue
         keystone_val = params[keystone]

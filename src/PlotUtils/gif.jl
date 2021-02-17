@@ -52,17 +52,18 @@ end
 save_gif(fn::String, dat; fps = 10.0) = save_gif(dat, fn; fps)
 
 ## ----------------------------------------------------------------------------
-function make_group_gif(keystone, dir::String; 
+function make_group_gif(keystone, sourcedir::String; 
         filter = (filename) -> true, 
         sortby = (x) -> x,
+        destdir = sourcedir,
         verbose = true
     )
 
-    figs = group_files(keystone, dir; filter)
+    figs = group_files(keystone, sourcedir; filter)
     gifs = []
     for ((name, params), files_dict) in figs
         gifname = DW.savename(name, params, "gif")
-        giffile = joinpath(dir, gifname)
+        giffile = joinpath(destdir, gifname)
         ks = sort(collect(keys(files_dict)); by = sortby)
         paths = [files_dict[k] for k in ks]
 
