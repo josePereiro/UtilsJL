@@ -1,6 +1,14 @@
 function mypkg_generate(pkgname::AbstractString)
     gitignore = 
 """
+
+# Custom
+/dev
+/figures
+/data
+log.txt
+*log.txt
+
 # Created by https://www.toptal.com/developers/gitignore/api/julia,macos,linux
 # Edit at https://www.toptal.com/developers/gitignore?templates=julia,macos,linux
 
