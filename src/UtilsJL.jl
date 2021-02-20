@@ -24,6 +24,13 @@ module UtilsJL
    include("PlotUtils/PlotUtils.jl")
    include("SimulationUtils/SimulationUtils.jl")
 
+   function __init__()
+      
+      # ResultsManagement
+      _init_globals()
+      
+   end
+
    export MASTERW, set_MASTERW, print_inmw, println_inmw, print_ifmw, println_ifmw, 
       tagprint_inmw, tagprintln_inmw, tagprint_ifmw, tagprintln_ifmw
 
