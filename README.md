@@ -1,2 +1,2 @@
 # UtilsJL
-[![Build status](https://github.com/JuliaSpace/SatelliteToolbox.jl/workflows/CI/badge.svg)](https://github.com/josePereiro/UtilsJL./actions)
+[![Build status](https://github.com/josePereiro/UtilsJL/workflows/CI/badge.svg)](https://github.com/josePereiro/UtilsJL/actions)
