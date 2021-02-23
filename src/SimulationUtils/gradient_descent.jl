@@ -1,13 +1,14 @@
 # Vectorize form
-_default_Err_fun(target::Vector) = (fᵢ) -> abs.(target .- fᵢ) ./ ifelse.(iszero.(target), 1.0, abs.(target)),
-
-function grad_desc(f::Function;
+_default_Err_fun(target::Vector) = (fᵢ) -> abs.(target .- fᵢ) ./ ifelse.(iszero.(target), 1.0, abs.(target))
+_default_break_cond(th) = (ϵᵢ) -> maximum(ϵᵢ) < th 
+function grad_desc_vec(f::Function;
         target::Vector,
         x0::Vector, x1::Vector,
-        C::Vector = abs.(x0 - x1), th = 1e-5,
+        maxΔ::Vector = abs.(x0 - x1), th = 1e-5,
         maxiters::Int = 1000, 
         toshow::Vector = [],
         Err = _default_Err_fun(target),
+        break_cond = _default_break_cond(th),
         verbose = true,
         oniter::Function = (it, fᵢ, xᵢ, Δx) -> (false, zero(x0))
     )
@@ -26,40 +27,49 @@ function grad_desc(f::Function;
         fᵢ = f(xᵢ)
         ϵᵢ = Err(fᵢ)
         sense .*= -sign.(ϵᵢ .- ϵᵢ₋₁)
-        sense == 0.0 && error("sense == 0. Descend gets stocked, target unreachable!!!")
-        Δx = sense .* C .* ϵᵢ
+        Δx = sense .* maxΔ .* min.(1.0, ϵᵢ)
 
+        # Dev
+        # @info("Dev", it, tuple(ϵᵢ), tuple(sense), tuple(Δx))
+        # println()
+        
+        
         # callback
         ret, val = oniter(it, fᵢ, xᵢ, Δx)
         ret && return val
-
-        maxϵᵢ = maximum(ϵᵢ)
-        maxϵᵢ < th && break
-
+        
         xᵢ₋₁ =  xᵢ
         ϵᵢ₋₁ = ϵᵢ
-
-        verbose && update!(prog, maxϵᵢ; showvalues = vcat(
-                [
-                    ("it", it),
-                    ("maxϵᵢ", maxϵᵢ),
-                    ("ϵᵢ", ϵᵢ),
-                    ("sense", sense),
-                    ("xᵢ", xᵢ),
-                    ("t", target),
-                    ("fᵢ", fᵢ),
-                ], toshow
+        
+        if verbose
+            maxϵᵢ = maximum(ϵᵢ)
+            update!(prog, maxϵᵢ; showvalues = vcat(
+                    [
+                        ("it", it),
+                        ("maxϵᵢ", maxϵᵢ),
+                        ("ϵᵢ", ϵᵢ),
+                        ("sense", sense),
+                        ("xᵢ", xᵢ),
+                        ("t", target),
+                        ("fᵢ", fᵢ),
+                    ], toshow
+                )
             )
-        )
+        end
+
+        # break condition
+        break_cond(ϵᵢ) && break
+        
     end
     verbose && finish!(prog)
 
     return xᵢ
 end
 
+## ----------------------------------------------------------------------------
 _default_Err_fun(target::Real) = (fᵢ) -> abs(target - fᵢ) / ifelse(iszero(target), 1.0, abs(target))
 
-function grad_desc(f;
+function grad_desc(f::Function;
         target::Real,
         x0::Real, x1::Real,
         maxΔ::Real = abs(x0 - x1), th = 1e-5,
@@ -82,6 +92,7 @@ function grad_desc(f;
         fᵢ = f(xᵢ)
         ϵᵢ = Err(fᵢ)
         sense *= ϵᵢ > ϵᵢ₋₁ ? -1.0 : 1.0
+        iszero(sense) && error("sense == 0. Descend gets stocked, target unreachable!!!")
         Δx = sense * maxΔ * ϵᵢ
         
         # callback
