@@ -28,18 +28,10 @@ function grad_desc_vec(f::Function;
         ϵᵢ = Err(fᵢ)
         sense .*= -sign.(ϵᵢ .- ϵᵢ₋₁)
         Δx = sense .* maxΔ .* min.(1.0, ϵᵢ)
-
-        # Dev
-        # @info("Dev", it, tuple(ϵᵢ), tuple(sense), tuple(Δx))
-        # println()
-        
         
         # callback
         ret, val = oniter(it, fᵢ, xᵢ, Δx)
         ret && return val
-        
-        xᵢ₋₁ =  xᵢ
-        ϵᵢ₋₁ = ϵᵢ
         
         if verbose
             maxϵᵢ = maximum(ϵᵢ)
@@ -56,6 +48,8 @@ function grad_desc_vec(f::Function;
                 )
             )
         end
+
+        ϵᵢ₋₁ = ϵᵢ
 
         # break condition
         break_cond(ϵᵢ) && break
@@ -85,24 +79,23 @@ function grad_desc(f::Function;
     fᵢ₋₁ = f(xᵢ₋₁)
     ϵᵢ₋₁ = Err(fᵢ₋₁)
     sense = one(target)
+    Δx = 0.0
 
     verbose && (prog = ProgressThresh(th, "Grad desc: "))
     for it in 1:maxiters
         
+        xᵢ += Δx
         fᵢ = f(xᵢ)
         ϵᵢ = Err(fᵢ)
         sense *= ϵᵢ > ϵᵢ₋₁ ? -1.0 : 1.0
         iszero(sense) && error("sense == 0. Descend gets stocked, target unreachable!!!")
-        Δx = sense * maxΔ * ϵᵢ
+        Δx = sense * maxΔ * min(1.0, ϵᵢ)
         
         # callback
         ret, val = oniter(it, fᵢ, xᵢ, Δx)
         ret && return val
         
         ϵᵢ < th && break
-        
-        xᵢ += Δx
-        ϵᵢ₋₁ = ϵᵢ
 
         verbose && update!(prog, ϵᵢ; showvalues = vcat(
                 [
@@ -116,6 +109,9 @@ function grad_desc(f::Function;
                 ], toshow
             )
         )
+
+        ϵᵢ₋₁ = ϵᵢ
+
     end
     verbose && finish!(prog)
 
