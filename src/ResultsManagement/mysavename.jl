@@ -1,4 +1,3 @@
-sci(n) = @sprintf("%0.1e", n)
 function mysavename(name, ext = ""; c...)
     d = Dict{Symbol, Any}(c)
     for (k, v) in d

@@ -2,6 +2,7 @@ module UtilsJL
 
    import Dates: Time, now
    import Distributed: myid, remotecall_wait
+   import Statistics
    import SparseArrays: AbstractSparseArray, sparse, issparse
    import BSON
    import Serialization: serialize, deserialize
@@ -23,6 +24,7 @@ module UtilsJL
    include("ResultsManagement/ResultsManagement.jl")
    include("PlotUtils/PlotUtils.jl")
    include("SimulationUtils/SimulationUtils.jl")
+   include("DevTools/DevTools.jl")
 
    function __init__()
       

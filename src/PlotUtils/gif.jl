@@ -56,7 +56,8 @@ function make_group_gif(keystone, sourcedir::String;
         filter = (filename) -> true, 
         sortby = (x) -> x,
         destdir = sourcedir,
-        verbose = true
+        verbose = true, 
+        fps = 3.0
     )
 
     figs = group_files(keystone, sourcedir; filter)
@@ -67,7 +68,7 @@ function make_group_gif(keystone, sourcedir::String;
         ks = sort(collect(keys(files_dict)); by = sortby)
         paths = [files_dict[k] for k in ks]
 
-        save_gif(paths, giffile; fps = 3.0)
+        save_gif(paths, giffile; fps)
         verbose && @info("Gif produced", gifname)
         push!(gifs, giffile)
     end
