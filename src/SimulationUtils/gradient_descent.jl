@@ -15,6 +15,7 @@ mutable struct GDModel{T}
     maxΔx::T
     maxiter::Int
     gdth::Real
+    smooth::Real
     verbose::Bool
 end
 
@@ -22,6 +23,7 @@ end
 function GDModel(;
         target, maxΔx, 
         maxiter = Int(1e4), 
+        smooth = 1.0,
         it0 = 1, 
         gdth,
         verbose = true,
@@ -40,7 +42,7 @@ function GDModel(;
         # state
         iter, xi, fi, ϵi, ϵii, Δx, sense,
         # params
-        target, maxΔx, maxiter, gdth, verbose
+        target, maxΔx, maxiter, gdth, smooth, verbose
     )
 end
 
@@ -48,12 +50,21 @@ gd_value(gdmodel::GDModel) = gdmodel.xi
 
 ## ------------------------------------------------------------------------------
 # Vectorize version
-_default_Err_fun(gdmodel::GDModel{T}) where T<:AbstractArray = 
-    abs.(gdmodel.target - gdmodel.fi) ./ ifelse.(iszero.(gdmodel.target), 1.0, abs.(gdmodel.target))
+function _default_Err_fun(gdmodel::GDModel{T}) where T<:AbstractArray 
+    diff = abs.(gdmodel.target - gdmodel.fi)
+    norm = ifelse.(iszero.(gdmodel.target), 1.0, abs.(gdmodel.target))
+    diff  ./  norm
+end
+
 _default_break_cond(gdmodel::GDModel{T}) where T<:AbstractArray = 
     maximum(gdmodel.ϵi) < gdmodel.gdth 
-_default_get_step(gdmodel::GDModel{T}) where T<:AbstractArray = 
-    gdmodel.sense .* gdmodel.maxΔx .* min.(1.0, gdmodel.ϵi)
+
+function _default_get_step(gdmodel::GDModel{T}) where T<:AbstractArray
+    max_step = gdmodel.sense .* gdmodel.maxΔx
+    correction = ifelse.(gdmodel.ϵi .< gdmodel.smooth, min.(1.0, gdmodel.ϵi), 1.0)
+    max_step .* correction
+end
+
 function _default_get_sense(gdmodel::GDModel{T}) where T<:AbstractArray 
     Δϵ = gdmodel.ϵi .- gdmodel.ϵii
     zeros = iszero.(Δϵ)
@@ -132,23 +143,34 @@ function grad_desc_vec(f::Function;
         target::T, 
         maxΔx::T = abs.(x0 - x1), 
         gdth::Real = 1e-5, 
+        smooth::Real = 1.0,
         maxiter = Int(1000), 
         it0 = 1, 
         verbose = true,
         kwargs...
     ) where {T<:AbstractArray}
 
-    gdmodel = GDModel(;target, maxΔx, maxiter, it0, gdth, verbose)
+    gdmodel = GDModel(;target, maxΔx, maxiter, it0, gdth, smooth, verbose)
     grad_desc_vec!(f, gdmodel; x0, x1, kwargs...)
 
 end
 
 ## ------------------------------------------------------------------------------
 # Scalar version
-_default_Err_fun(gdmodel::GDModel{T}) where T<:Real = 
-    abs(gdmodel.target - gdmodel.fi) / ifelse(iszero(gdmodel.target), 1.0, abs(gdmodel.target))
+function _default_Err_fun(gdmodel::GDModel{T}) where T<:Real 
+    diff = abs(gdmodel.target - gdmodel.fi)
+    norm = ifelse(iszero(gdmodel.target), 1.0, abs(gdmodel.target))
+    diff / norm
+end
+
 _default_break_cond(gdmodel::GDModel{T}) where T<:Real = gdmodel.ϵi < gdmodel.gdth 
-_default_get_step(gdmodel::GDModel{T}) where T<:Real = gdmodel.sense * gdmodel.maxΔx * min.(1.0, gdmodel.ϵi)
+
+function _default_get_step(gdmodel::GDModel{T}) where T<:Real 
+    max_step = gdmodel.sense * gdmodel.maxΔx
+    correction = (gdmodel.ϵi < gdmodel.smooth) ? min.(1.0, gdmodel.ϵi) : 1.0
+    max_step * correction
+end
+
 function _default_get_sense(gdmodel::GDModel{T}) where T<:Real 
     Δϵ = gdmodel.ϵi - gdmodel.ϵii
     iszero(Δϵ) ? rand(-1:1) : gdmodel.sense * -sign(gdmodel.ϵi - gdmodel.ϵii)
@@ -217,6 +239,7 @@ function grad_desc(f::Function;
         x0::T, x1::T,
         target::T, 
         maxΔx::T = abs.(x0 - x1), 
+        smooth = 1.0,
         gdth::Real = 1e-5, 
         maxiter = Int(1000), 
         it0 = 1, 
@@ -224,7 +247,7 @@ function grad_desc(f::Function;
         kwargs...
     ) where {T<:Real}
 
-    gdmodel = GDModel(;target, maxΔx, maxiter, it0, gdth, verbose)
+    gdmodel = GDModel(;target, maxΔx, maxiter, it0, gdth, smooth, verbose)
     grad_desc!(f, gdmodel; x0, x1, kwargs...)
 
 end
