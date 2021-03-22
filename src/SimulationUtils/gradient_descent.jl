@@ -9,10 +9,15 @@ mutable struct GDModel{T}
     ϵii::T
     Δx::T
     sense::T
-
+    sense_count::T
+    damp::T
+    
     # params
+    damp_win::Real
+    damp_factor::Real
     target::T
     maxΔx::T
+    minΔx::T
     maxiter::Int
     gdth::Real
     smooth::Real
@@ -21,10 +26,13 @@ end
 
 # constructor
 function GDModel(;
-        target, maxΔx, 
+        target, 
+        maxΔx, minΔx, 
         maxiter = Int(1e4), 
         smooth = 1.0,
         it0 = 1, 
+        damp_win = 4,
+        damp_factor = 0.9, # damp reduction factor
         gdth,
         verbose = true,
     )
@@ -37,12 +45,14 @@ function GDModel(;
     ϵii = zero(target)
     Δx = zero(target)
     sense = zero(target)
+    sense_count = zero(target)
+    damp = zero(target) .+ one(eltype(target))
 
     GDModel{typeof(target)}(
         # state
-        iter, xi, fi, ϵi, ϵii, Δx, sense,
+        iter, xi, fi, ϵi, ϵii, Δx, sense, sense_count, damp,
         # params
-        target, maxΔx, maxiter, gdth, smooth, verbose
+        damp_win, damp_factor, target, maxΔx, minΔx, maxiter, gdth, smooth, verbose
     )
 end
 
@@ -60,9 +70,10 @@ _default_break_cond(gdmodel::GDModel{T}) where T<:AbstractArray =
     maximum(gdmodel.ϵi) < gdmodel.gdth 
 
 function _default_get_step(gdmodel::GDModel{T}) where T<:AbstractArray
-    max_step = gdmodel.sense .* gdmodel.maxΔx
+    max_step = gdmodel.maxΔx
     correction = ifelse.(gdmodel.ϵi .< gdmodel.smooth, min.(1.0, gdmodel.ϵi), 1.0)
-    max_step .* correction
+    step = max_step .* correction .* gdmodel.damp
+    gdmodel.sense .* clamp.(step, gdmodel.minΔx, gdmodel.maxΔx)
 end
 
 function _default_get_sense(gdmodel::GDModel{T}) where T<:AbstractArray 
@@ -108,7 +119,18 @@ function grad_desc_vec!(f::Function, gdmodel::GDModel{T};
         # callback
         ret = oniter!(gdmodel)
         ret && return gdmodel
-        
+
+        gdmodel.ϵii .= gdmodel.ϵi
+
+        # Damp detection
+        if iszero(rem(gdmodel.iter, gdmodel.damp_win))
+            isdamping = iszero.(gdmodel.sense_count) 
+            gdmodel.damp .= ifelse.(isdamping, gdmodel.damp .*= gdmodel.damp_factor, gdmodel.damp)
+            gdmodel.sense_count .= zero(gdmodel.sense_count)
+        end
+        gdmodel.sense_count .+= gdmodel.sense
+
+        # verbose
         if gdmodel.verbose
             maxϵᵢ = maximum(gdmodel.ϵi)
             update!(prog, maxϵᵢ; showvalues = vcat(
@@ -125,8 +147,6 @@ function grad_desc_vec!(f::Function, gdmodel::GDModel{T};
             )
         end
 
-        gdmodel.ϵii .= gdmodel.ϵi
-
         # break condition
         break_cond(gdmodel) && break
         gdmodel.iter >= gdmodel.maxiter &&  break
@@ -142,15 +162,20 @@ function grad_desc_vec(f::Function;
         x0::T, x1::T,
         target::T, 
         maxΔx::T = abs.(x0 - x1), 
+        minΔx::T = abs.(maxΔx .* 1e-35),
         gdth::Real = 1e-5, 
         smooth::Real = 1.0,
         maxiter = Int(1000), 
+        damp_win = 4,
+        damp_factor = 0.9, # damp reduction factor
         it0 = 1, 
         verbose = true,
         kwargs...
     ) where {T<:AbstractArray}
 
-    gdmodel = GDModel(;target, maxΔx, maxiter, it0, gdth, smooth, verbose)
+    gdmodel = GDModel(;target, maxΔx, minΔx, maxiter, it0, 
+        gdth, smooth, damp_win, damp_factor, verbose
+    )
     grad_desc_vec!(f, gdmodel; x0, x1, kwargs...)
 
 end
@@ -166,9 +191,10 @@ end
 _default_break_cond(gdmodel::GDModel{T}) where T<:Real = gdmodel.ϵi < gdmodel.gdth 
 
 function _default_get_step(gdmodel::GDModel{T}) where T<:Real 
-    max_step = gdmodel.sense * gdmodel.maxΔx
+    max_step = gdmodel.maxΔx
     correction = (gdmodel.ϵi < gdmodel.smooth) ? min.(1.0, gdmodel.ϵi) : 1.0
-    max_step * correction
+    step = max_step * correction * gdmodel.damp
+    gdmodel.sense * clamp(step, gdmodel.minΔx, gdmodel.maxΔx)
 end
 
 function _default_get_sense(gdmodel::GDModel{T}) where T<:Real 
@@ -183,7 +209,7 @@ function grad_desc!(f::Function, gdmodel::GDModel{T};
         break_cond::Function = _default_break_cond,
         oniter!::Function = (dgmodel) -> false,
         get_sense::Function = _default_get_sense,
-        get_step::Function = _default_get_step
+        get_step::Function = _default_get_step,
     ) where {T<:Real}
 
     # initializing
@@ -214,6 +240,7 @@ function grad_desc!(f::Function, gdmodel::GDModel{T};
                         ("it", gdmodel.iter),
                         ("ϵᵢ", gdmodel.ϵi),
                         ("sense", gdmodel.sense),
+                        ("Δx: min/val/max", (gdmodel.minΔx, gdmodel.Δx, gdmodel.maxΔx)),
                         ("xᵢ", gdmodel.xi),
                         ("t", gdmodel.target),
                         ("fi", gdmodel.fi),
@@ -223,6 +250,16 @@ function grad_desc!(f::Function, gdmodel::GDModel{T};
         end
 
         gdmodel.ϵii = gdmodel.ϵi
+
+        # Damp detection
+        if iszero(rem(gdmodel.iter, gdmodel.damp_win))
+            if iszero(gdmodel.sense_count)
+                # Damping detetected
+                gdmodel.damp *= gdmodel.damp_factor
+            end
+            gdmodel.sense_count = 0
+        end
+        gdmodel.sense_count += gdmodel.sense
 
         # break condition
         break_cond(gdmodel) && break
@@ -238,16 +275,21 @@ end
 function grad_desc(f::Function;
         x0::T, x1::T,
         target::T, 
-        maxΔx::T = abs.(x0 - x1), 
+        maxΔx::T = abs(x0 - x1), 
+        minΔx::T = abs(maxΔx * 1e-35), 
         smooth = 1.0,
         gdth::Real = 1e-5, 
         maxiter = Int(1000), 
         it0 = 1, 
+        damp_win = 4,
+        damp_factor = 0.9, # damp reduction factor
         verbose = true,
         kwargs...
     ) where {T<:Real}
 
-    gdmodel = GDModel(;target, maxΔx, maxiter, it0, gdth, smooth, verbose)
+    gdmodel = GDModel(;target, minΔx, maxΔx, maxiter, it0, gdth, 
+        damp_win, damp_factor, smooth, verbose
+    )
     grad_desc!(f, gdmodel; x0, x1, kwargs...)
 
 end
