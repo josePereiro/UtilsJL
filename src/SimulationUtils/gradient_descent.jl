@@ -31,6 +31,7 @@ function GDModel(;
         maxiter = Int(1e4), 
         smooth = 1.0,
         it0 = 1, 
+        damp = zero(target) .+ one(eltype(target)),
         damp_win = 4,
         damp_factor = 0.9, # damp reduction factor
         gdth,
@@ -46,8 +47,6 @@ function GDModel(;
     Δx = zero(target)
     sense = zero(target)
     sense_count = zero(target)
-    damp = zero(target) .+ one(eltype(target))
-
     GDModel{typeof(target)}(
         # state
         iter, xi, fi, ϵi, ϵii, Δx, sense, sense_count, damp,
@@ -166,6 +165,7 @@ function grad_desc_vec(f::Function;
         gdth::Real = 1e-5, 
         smooth::Real = 1.0,
         maxiter = Int(1000), 
+        damp = zero(target) .+ one(eltype(target)),
         damp_win = 4,
         damp_factor = 0.9, # damp reduction factor
         it0 = 1, 
@@ -174,7 +174,7 @@ function grad_desc_vec(f::Function;
     ) where {T<:AbstractArray}
 
     gdmodel = GDModel(;target, maxΔx, minΔx, maxiter, it0, 
-        gdth, smooth, damp_win, damp_factor, verbose
+        gdth, smooth, damp, damp_win, damp_factor, verbose
     )
     grad_desc_vec!(f, gdmodel; x0, x1, kwargs...)
 
@@ -281,6 +281,7 @@ function grad_desc(f::Function;
         gdth::Real = 1e-5, 
         maxiter = Int(1000), 
         it0 = 1, 
+        damp = 1.0,
         damp_win = 4,
         damp_factor = 0.9, # damp reduction factor
         verbose = true,
@@ -288,7 +289,7 @@ function grad_desc(f::Function;
     ) where {T<:Real}
 
     gdmodel = GDModel(;target, minΔx, maxΔx, maxiter, it0, gdth, 
-        damp_win, damp_factor, smooth, verbose
+        damp, damp_win, damp_factor, smooth, verbose
     )
     grad_desc!(f, gdmodel; x0, x1, kwargs...)
 

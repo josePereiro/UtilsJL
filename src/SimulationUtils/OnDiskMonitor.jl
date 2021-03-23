@@ -114,6 +114,8 @@ function watch(onupdate::Function, m::OnDiskMonitor;
     end
 
     for it in 1:iters
+        sleep(wt)
+        
         # Register task
         !isfile(m.file) && continue
         _worw_lock(m.lk, dolk) do
@@ -130,7 +132,6 @@ function watch(onupdate::Function, m::OnDiskMonitor;
 
         reghash = get(_WATCHING_TASKS, m.file, nothing)
         reghash != funhash && break
-        sleep(wt)
     end
     return nothing
 end
