@@ -100,7 +100,10 @@ function grad_desc_vec!(f::Function, gdmodel::GDModel{T};
     # initializing
     gdmodel.xi .= x0
     gdmodel.fi .= f(gdmodel)
-    gdmodel.ϵii .= Err(gdmodel)
+    gdmodel.ϵi .= Err(gdmodel)
+    break_cond(gdmodel) && return gdmodel
+
+    gdmodel.ϵii .= gdmodel.ϵi
     gdmodel.sense .= ones(length(gdmodel.target))
     gdmodel.Δx .= zero(gdmodel.xi)
     gdmodel.xi .= x1
@@ -215,7 +218,10 @@ function grad_desc!(f::Function, gdmodel::GDModel{T};
     # initializing
     gdmodel.xi = x0
     gdmodel.fi = f(gdmodel)
-    gdmodel.ϵii = Err(gdmodel)
+    gdmodel.ϵi = Err(gdmodel)
+    break_cond(gdmodel) && return gdmodel
+
+    gdmodel.ϵii = gdmodel.ϵi
     gdmodel.sense = one(gdmodel.target)
     gdmodel.Δx = zero(gdmodel.xi)
     gdmodel.xi = x1
