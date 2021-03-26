@@ -104,7 +104,7 @@ end
 """
 function watch(onupdate::Function, m::OnDiskMonitor; 
         dolk = true, wt = m.dt, iters = typemax(Int), 
-        onerr = (err) -> @warn("Error on update", err)
+        onerr = (err) -> @warn("Error on loading/update", err)
     )
 
     # register task 
@@ -122,8 +122,9 @@ function watch(onupdate::Function, m::OnDiskMonitor;
             lmtime = get!(_UPDATE_RECORD, m.file, -1.0)
             fmtime = mtime(m.file)
             if lmtime != fmtime
-                dat = deserialize(m.file)
-                try; onupdate(dat)
+                try
+                    dat = deserialize(m.file)
+                    onupdate(dat)
                     catch err; onerr(err)
                 end
             end
