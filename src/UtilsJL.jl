@@ -8,7 +8,6 @@ module UtilsJL
    import Serialization: serialize, deserialize
    import DrWatson
    const DW = DrWatson
-   import PkgTemplates: Git, Template, generate
    import Printf: @sprintf
    import Plots: savefig, AbstractPlot
    import FixedPointNumbers: N0f8
@@ -41,7 +40,7 @@ module UtilsJL
    export mysavename
 
    export set_cache_dir, temp_cache_file, save_cache,
-      load_cache, delete_temp_caches, CACHE_DIR, 
+      load_cache, delete_temp_caches,  
       backup_temp_cache, is_temp_cache_file
 
    export sparsity, logspace, to_symbol_dict, struct_to_dict, err_str, get_chuncks
