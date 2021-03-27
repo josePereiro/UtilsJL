@@ -11,4 +11,8 @@ let
         _sci_pool[d] = fun
     end
 end
-sci(n; d::Int = 1) = getproperty(@__MODULE__, _sci_pool[d])(n)
+function sci(n; d::Int = 1) 
+    d = clamp(d, 1, 10)
+    scifun = getproperty(@__MODULE__, _sci_pool[d])
+    scifun(n)
+end
