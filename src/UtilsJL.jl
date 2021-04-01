@@ -17,13 +17,15 @@ module UtilsJL
    import Logging
    import Logging: SimpleLogger, global_logger, with_logger
    import ProgressMeter: ProgressThresh, Progress, next!, finish!, update!
+   using Base.Threads
 
-   include("DistrubutedUtils/DistributedUtils.jl")
-   include("GeneralUtils.jl/GeneralUtils.jl")
-   include("ResultsManagement/ResultsManagement.jl")
+   include("DistributedUtils/DistributedUtils.jl")
+   include("GeneralUtils/GeneralUtils.jl")
    include("PlotUtils/PlotUtils.jl")
    include("SimulationUtils/SimulationUtils.jl")
    include("DevTools/DevTools.jl")
+   include("ProjAssistant/ProjAssistant.jl")
+
 
    function __init__()
       

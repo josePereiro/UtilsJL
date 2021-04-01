@@ -34,7 +34,7 @@ function create_proj_dirs(mod::Module)
     end
 end
 
-# TODO: Transfor to your layout
+# TODO: Transform to your layout
 # function print_proj_layout()
 #     """
 #     │projectdir          <- Project's main folder. It is initialized as a Git
