@@ -2,17 +2,16 @@ function _walkdown(f, root; keepout, onerr, kwargs...)
     content = readdir(root)
     for name in content
         
-        file = joinpath(root, name)
-        
+        path = joinpath(root, name)
         val = try; f(path)
             catch err; onerr(path, err) 
         end
         (val === true) && return val
 
         # recursive call
-        if isdir(file)
-            keepout(file) && continue
-            val = _walkdown(f, file; keepout, onerr)
+        if isdir(path)
+            keepout(path) && continue
+            val = _walkdown(f, path; keepout, onerr)
             (val === true) && return val 
         end
     end

@@ -1,17 +1,28 @@
 function gen_top_proj(mod::Module)
 
-    @eval(mod, projectname() = $(DrWatson.projectname()))
-    @eval(mod, projectdir() = $(DrWatson.projectdir()))
-    @eval(mod, devdir() = $(DrWatson.projectdir("dev")))
+    modpath = (pathof(mod))
+    isnothing(modpath) && error("Module `", mod , "` must have a path to be a project")
+    @eval mod begin
+        
+        istop_proj() = true
+        projectname() = $(string(mod))
+        projectdir() = $(dirname(dirname(pathof(mod))))
+        projectdir(arg, args...) = joinpath(projectdir(), arg, args...)
 
-    for funname in (:datadir, :srcdir, :plotsdir, :scriptsdir, :papersdir)
-        @eval mod $(funname)(args...) = $(getproperty(DrWatson, funname))(args...)
+        # folders
+        devdir(args...) = projectdir("dev", args...)
+        datadir(args...) = projectdir("data", args...)
+        srcdir(args...) = projectdir("src", args...)
+        plotsdir(args...) = projectdir("plots", args...)
+        scriptsdir(args...) = projectdir("scripts", args...)
+        papersdir(args...) = projectdir("papers", args...)
+
+        # subdata
+        procdir(args...) = datadir("processed", args...)
+        rawdir(args...) = datadir("raw", args...)
+        cachedir(args...) = datadir("cache", args...)
     end
-
-    # subdata
-    @eval(mod, procdir(args...) = datadir("processed", args...))
-    @eval(mod, rawdir(args...) = datadir("raw", args...))
-    @eval(mod, cachedir(args...) = datadir("cache", args...))
+   
 end
 
 function gen_sub_proj(currmod::Module, parentmod::Module = parentmodule(currmod))

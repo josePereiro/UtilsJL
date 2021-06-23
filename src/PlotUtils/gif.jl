@@ -52,21 +52,22 @@ end
 save_gif(fn::String, dat; fps = 10.0) = save_gif(dat, fn; fps)
 
 ## ----------------------------------------------------------------------------
-function make_group_gif(keystone, sourcedir::String; 
+function make_group_gif(freedim, sourcedir::String; 
         filter = (filename) -> true, 
-        sortby = (x) -> x,
+        sortby = identity,
         destdir = sourcedir,
         verbose = true, 
         fps = 3.0
     )
 
-    figs = group_files(keystone, sourcedir; filter)
+    dfg = group_files(freedim, sourcedir; filter)
     gifs = []
-    for ((name, params), files_dict) in figs
-        gifname = DW.savename(name, params, "gif")
+    for ((k, head, params, ext), elms) in dfg
+        gifname = dfname(head..., params, "gif")
         giffile = joinpath(destdir, gifname)
-        ks = sort(collect(keys(files_dict)); by = sortby)
-        paths = [files_dict[k] for k in ks]
+
+        selms = sort!(collect(elms); by = (p) -> sortby(first(p)))
+        paths = [file for (kv, file) in selms]
 
         save_gif(paths, giffile; fps)
         verbose && @info("Gif produced", gifname)

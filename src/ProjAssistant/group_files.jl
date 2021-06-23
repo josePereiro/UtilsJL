@@ -1,17 +1,21 @@
-function group_files(keystone, dir; 
+function group_files(freedim, dir; 
         filter = (filename) -> true
     )
+    freedim = string(freedim)
     files = Dict()
     for filename in readdir(dir) |> sort
         !filter(filename) && continue
-        name, params, ext = DW.parse_savename(filename)
+        
+        ret = tryparse_dfname(filename)
+        isnothing(ret) && continue
+        head, params, ext = ret
 
-        !haskey(params, keystone) && continue
-        keystone_val = params[keystone]
-        delete!(params, keystone)
+        !haskey(params, freedim) && continue
+        freedim_val = params[freedim]
+        delete!(params, freedim)
 
-        f = get!(files, (name, params), Dict())
-        f[keystone_val] = joinpath(dir, filename)
+        f = get!(files, (freedim, head, params, ext), Dict())
+        f[freedim_val] = joinpath(dir, filename)
     end
     files
 end

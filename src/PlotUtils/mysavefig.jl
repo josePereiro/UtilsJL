@@ -1,5 +1,5 @@
 function mysavefig(p, pname, dir, ext = "png"; params...)
-    pname = mysavename(pname, ext; params...)
+    pname = dfname(pname, ext; params...)
     fname = joinpath(dir, pname)
     savefig(p, fname)
     fname
@@ -10,7 +10,7 @@ function mysavefig(ps::Vector, pname, dir, ext = "png";
         margin = 10, 
         params...
     )
-    pname = mysavename(pname, ext; params...)
+    pname = dfname(pname, ext; params...)
     fname = joinpath(dir, pname)
     grid = make_grid(ps; layout, margin)
     FileIO.save(fname, grid)
