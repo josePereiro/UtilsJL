@@ -1,7 +1,7 @@
 function proto_tests()
 
     @test @eval begin
-        UtilsJL.@proto struct TestStruct
+        UtilsJL.DevTools.@proto struct TestStruct
             w::Float64
             x::Float64
             y::Float64
@@ -16,7 +16,7 @@ function proto_tests()
     @test @isdefined TestStruct
 
     @test @eval begin
-        UtilsJL.@proto struct TestStruct
+        UtilsJL.DevTools.@proto struct TestStruct
             w::Float64
             x::Float64
             y::Float64

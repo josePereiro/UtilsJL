@@ -3,7 +3,7 @@
 const GLOBALS = Dict()
 const TEMP_CACHE_FILE_PREFIX = "temp_cache"
 const DATA_KEY = :dat
-
+ 
 function _init_globals()
     empty!(GLOBALS)
     GLOBALS[:CACHE_DIR] = pwd()
@@ -28,7 +28,7 @@ temp_cache_file(hashtable, cache_dir = get_cache_dir(), ext = ".jld") =
 function _save_cache(hashtable, data; 
         cache_dir = get_cache_dir(), headline = "CACHE SAVED",
         verbose = get_verbose(), onerr::Function = (err) -> rethrow(err), 
-        print_fun = tagprintln_inmw
+        print_fun = println
     )
 
     tcache_file = temp_cache_file(hashtable, cache_dir) |> relpath
@@ -72,7 +72,7 @@ function _load_cache(f::Function, hashtable::Any;
         verbose = get_verbose(), 
         onerr::Function = (err) -> rethrow(err),
         savecache = true,
-        print_fun = tagprintln_inmw
+        print_fun = println
     )
 
     tcache_file = temp_cache_file(hashtable, cache_dir) |> relpath
@@ -118,7 +118,7 @@ function delete_cache(hashtable; cache_dir = get_cache_dir(), force = true)
 end
 
 function delete_temp_caches(cache_dir = get_cache_dir(); 
-        verbose = get_verbose(), print_fun = println_inmw
+        verbose = get_verbose(), print_fun = println
     )
     tcaches = filter(file -> startswith(file, TEMP_CACHE_FILE_PREFIX), readdir(cache_dir))
     for tc in tcaches

@@ -2,7 +2,9 @@
     The id of the master worker
 """
 MASTERW = 1
-set_MASTERW(w) = (global MASTERW = w)
+_set_MASTERW(w) = (global MASTERW = w)
+set_MASTERW(MW::Int, ws::Vector{Int} = workers()) = 
+    (remotecall_wait.([_set_MASTERW], ws, [MW]); MW)
 
 print_inmw(ss...) = (remotecall_wait(Base.print, MASTERW, ss...); nothing)
 println_inmw(ss...) = (remotecall_wait(Base.println, MASTERW, ss...); nothing)

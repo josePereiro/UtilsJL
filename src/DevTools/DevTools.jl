@@ -1,1 +1,3 @@
-include("proto.jl")
+module DevTools
+    include("proto.jl")
+end

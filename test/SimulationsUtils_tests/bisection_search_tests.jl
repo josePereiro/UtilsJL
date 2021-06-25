@@ -8,7 +8,7 @@ function test_bisection_search()
     for e in [10.0^i for i in -1:0.1:1]
         println("f(x) = x.^$(e)")
         f(x) = x.^e
-        x = UtilsJL.bisection_search(f, x0, x1, t; verbose = false)
+        x = UtilsJL.SimulationUtils.bisection_search(f, x0, x1, t; verbose = false)
         @test !isnothing(x) && all(isapprox.(f(x), t; atol = tol))
     end
 end

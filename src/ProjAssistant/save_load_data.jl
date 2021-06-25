@@ -6,31 +6,44 @@ const DIRTY_SUFFIX = "_dirty"
 const SHORT_HASH_LENGTH = 7
 const ERROR_LOGGER = SimpleLogger(stdout, Logging.Error)
 
-function load_data(src_file; print_fun = println, verbose = true)
+function ldat(dfargs...; print_fun = println, verbose = true)
+    src_file = dfname(dfargs...)
     file_dat = DW.wload(src_file)
-    data = file_dat[DATA_KEY]
-    commit_hash = get(file_dat, GIT_COMMIT_KEY, nothing)
+    dat = file_dat[DATA_KEY]
+    commit_hash = get(file_dat, GIT_COMMIT_KEY, "")
     verbose && print_fun(
-        relpath(src_file), " loaded, size: ", filesize(src_file), " bytes", 
-        isnothing(commit_hash) ? "" : string(", commit: ", cut_hash(commit_hash))
+        relpath(src_file), " loaded, size: ", filesize(src_file), " bytes, ", 
+        string("commit: ", _cut_hash(commit_hash))
     )
-    return data
+    return dat
+end
+function ldat(f::Function, dfargs...; kwargs...)
+    src_file = dfname(dfargs...)
+    !isfile(src_file) && sdat(f(), src_file; kwargs...)
+    ldat(src_file; kwargs...)
 end
 
-function save_data(src_file, data; verbose = true, print_fun = println, tagsave_kwargs...)
+function sdat(f::Function, dfargs...; 
+        verbose = true, print_fun = println, 
+        tagsave_kwargs...
+    )
+    dat = f()
+    src_file = dfname(dfargs...)
     L = verbose ? global_logger() : ERROR_LOGGER
     with_logger(L) do
-        data = DW.tagsave(src_file, Dict(DATA_KEY => data); tagsave_kwargs...)
+        dat = DW.tagsave(src_file, Dict(DATA_KEY => dat); tagsave_kwargs...)
         verbose && print_fun(relpath(src_file), " saved!!!, size: ", filesize(src_file), " bytes")
-        return data
+        return dat
     end
 end
+sdat(dat, dfargs...; kwargs...) = sdat(() -> dat, dfargs...; kwargs...) 
 
-load_commit_hash(src_file) = get(DW.wload(src_file), GIT_COMMIT_KEY, "")
+function dhash(src_file, l = SHORT_HASH_LENGTH) 
+    hash = get(DW.wload(src_file), GIT_COMMIT_KEY, "")
+    _cut_hash(hash, l)
+end
 
-load_commit_short_hash(src_file, l = SHORT_HASH_LENGTH) = cut_hash(load_commit_hash(src_file), l)
-
-function cut_hash(commit_hash, l = SHORT_HASH_LENGTH)
+function _cut_hash(commit_hash, l = SHORT_HASH_LENGTH)
     short_hash = first(commit_hash, l)
     endswith(commit_hash, DIRTY_SUFFIX) ? string(short_hash, DIRTY_SUFFIX) : short_hash
 end
