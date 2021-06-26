@@ -1,17 +1,41 @@
 function cache_tests()
     
     @info "cache_tests"
-    UtilsJL.ProjectAssistant.set_cache_dir(tempdir())
-    UtilsJL.ProjectAssistant.set_verbose(false)
-    for i in 1:10
-        data = rand(10,10)
-        data_cid = UtilsJL.ProjectAssistant.save_cache(data)
-        ldata = UtilsJL.ProjectAssistant.load_cache(data_cid)
-        @test all(ldata .==  data)
-        
-        UtilsJL.ProjectAssistant.delete_cache(data_cid)
-        ldata = UtilsJL.ProjectAssistant.load_cache(data_cid, :DELETED)
-        @test ldata == :DELETED
-    end
+    UtilsJL.ProjAssistant.set_cache_dir(tempdir())
+    N = 15
+    dat0 = rand(N)
+
+    cfile = UtilsJL.ProjAssistant.cfname("my_dat", N)
+    cfile = UtilsJL.ProjAssistant.scache(dat0, cfile)
+    @test isfile(cfile)
+    dat1 = UtilsJL.ProjAssistant.lcache(cfile)
+    @test all(dat0 .== dat1)
+    UtilsJL.ProjAssistant.delcache("my_dat", N)
+    @test !isfile(cfile)
+
+    cfile = UtilsJL.ProjAssistant.scache(dat0, "my_dat", N)
+    dat1 = UtilsJL.ProjAssistant.lcache("my_dat", N)
+    @test all(dat0 .== dat1)
+    UtilsJL.ProjAssistant.delcache("my_dat", N)
+    @test !isfile(cfile)
+    
+    cfile = UtilsJL.ProjAssistant.scache(() -> dat0, "my_dat", N)
+    dat1 = UtilsJL.ProjAssistant.lcache("my_dat", N)
+    @test all(dat0 .== dat1)
+    UtilsJL.ProjAssistant.delcache(cfile)
+    @test !isfile(cfile)
+    
+    cfile = UtilsJL.ProjAssistant.scache(() -> dat0)
+    dat1 = UtilsJL.ProjAssistant.lcache(cfile)
+    @test all(dat0 .== dat1)
+    UtilsJL.ProjAssistant.delcache(cfile)
+    @test !isfile(cfile)
+    
+    cfile = UtilsJL.ProjAssistant.scache(dat0)
+    dat1 = UtilsJL.ProjAssistant.lcache(cfile)
+    @test all(dat0 .== dat1)
+    UtilsJL.ProjAssistant.delcache(cfile)
+    @test !isfile(cfile)
+
 end
 cache_tests()

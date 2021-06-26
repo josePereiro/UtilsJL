@@ -8,7 +8,7 @@ const ERROR_LOGGER = SimpleLogger(stdout, Logging.Error)
 
 function ldat(dfargs...; print_fun = println, verbose = true)
     src_file = dfname(dfargs...)
-    file_dat = DW.wload(src_file)
+    file_dat = wload(src_file)
     dat = file_dat[DATA_KEY]
     commit_hash = get(file_dat, GIT_COMMIT_KEY, "")
     verbose && print_fun(
@@ -31,7 +31,7 @@ function sdat(f::Function, dfargs...;
     src_file = dfname(dfargs...)
     L = verbose ? global_logger() : ERROR_LOGGER
     with_logger(L) do
-        dat = DW.tagsave(src_file, Dict(DATA_KEY => dat); tagsave_kwargs...)
+        dat = tagsave(src_file, Dict(DATA_KEY => dat); tagsave_kwargs...)
         verbose && print_fun(relpath(src_file), " saved!!!, size: ", filesize(src_file), " bytes")
         return dat
     end
@@ -39,7 +39,7 @@ end
 sdat(dat, dfargs...; kwargs...) = sdat(() -> dat, dfargs...; kwargs...) 
 
 function dhash(src_file, l = SHORT_HASH_LENGTH) 
-    hash = get(DW.wload(src_file), GIT_COMMIT_KEY, "")
+    hash = get(wload(src_file), GIT_COMMIT_KEY, "")
     _cut_hash(hash, l)
 end
 
