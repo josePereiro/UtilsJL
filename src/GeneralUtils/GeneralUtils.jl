@@ -5,7 +5,8 @@ module GeneralUtils
     
     include("compress.jl")
     include("unclassified.jl")
-    include("get_chuncks.jl")
+    include("IterChunk.jl")
+    include("DictTree.jl")
     include("sci.jl")
     
 end

@@ -2,7 +2,7 @@
 function plot_to_img(p::AbstractPlot; ext = "png", clear = true)
     fn = string(tempname(), ".", ext)
     try
-        savefig(p, fn)
+        Plots.savefig(p, fn)
         return FileIO.load(fn)
     finally
         clear && rm(fn; force = true)

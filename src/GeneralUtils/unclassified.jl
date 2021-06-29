@@ -24,7 +24,7 @@ end
 function struct_to_dict(obj::T) where T
     dict = Dict()
     for f in fieldnames(T)
-        dict[f] = getfield(obj, f)
+        dict[f] = getproperty(obj, f)
     end
     return dict
 end

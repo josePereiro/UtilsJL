@@ -5,7 +5,6 @@ const BLUE_PIX = RGB{N0f8}(0.0,0.0,1.0)
 const BLACK_PIX = RGB{N0f8}(0.0,0.0,0.0)
 const WHITE_PIX = RGB{N0f8}(1.0,1.0,1.0)
 
-
 ## ----------------------------------------------------------------------------
 function add_margin(a::Matrix, topm::Int, botm::Int, leftm::Int, rightm::Int, tofill)
     M, N = size(a)

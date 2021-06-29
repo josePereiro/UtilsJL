@@ -1,66 +1,11 @@
-function gen_top_proj(mod::Module)
-
-    modpath = (pathof(mod))
-    # isnothing(modpath) && error("Module `", mod , "` must have a path to be a top project")
-    @eval mod begin
-        
-        # ---------------------------------------------------------------------
-        _joinpath(dir, dfargs) = isempty(dfargs) ? 
-            joinpath(dir) : joinpath(dir, $(dfname)(dfargs...))
-
-        # ---------------------------------------------------------------------
-        istop_proj() = true
-        projectname() = $(string(mod))
-        # projectdir() = $(dirname(dirname(pathof(mod))))
-        projectdir() = projectname() # Test
-        projectdir(args...) = _joinpath(projectdir(), args)
-        
-        # ---------------------------------------------------------------------
-        # folders
-        devdir(args...)  = _joinpath(projectdir(["dev"]), args)
-        datadir(args...) = _joinpath(projectdir(["data"]), args)
-        srcdir(args...) = _joinpath(projectdir(["src"]), args)
-        plotsdir(args...) = _joinpath(projectdir(["plots"]), args)
-        scriptsdir(args...) = _joinpath(projectdir(["scripts"]), args)
-        papersdir(args...) = _joinpath(projectdir(["papers"]), args)
-        
-        # ---------------------------------------------------------------------
-        # subdata
-        procdir(args...) = _joinpath(datadir(["processed"]), args)
-        rawdir(args...) = _joinpath(datadir(["raw"]), args)
-        cachedir(args...) = _joinpath(datadir(["cache"]), args)
-        
-    end
-   
-end
-
-function gen_sub_proj(currmod::Module, parentmod::Module = parentmodule(currmod))
-
-    !isdefined(parentmod, :projectname) && 
-        error("Parent module ($(parentmod)) is not a project.")
-    
-    @eval currmod begin 
-        istop_proj() = false
-        projectname() = string(nameof($currmod))
-    end
-    
-    for funname in (:plotsdir, :procdir, :rawdir, :cachedir)
-        father_fun = getproperty(parentmod, funname)
-        _joinpath = getproperty(parentmod, :_joinpath)
-        @eval currmod begin 
-            $funname(args...) = $(_joinpath)($(father_fun)(projectname()), args)
-        end
-    end
-end
-
 function create_proj_dirs(mod::Module)
     for funname in (
-            :datadir, :srcdir, :plotsdir, :scriptsdir, 
+            :datdir, :srcdir, :plotsdir, :scriptsdir, 
             :papersdir, :procdir, :rawdir, :cachedir, :devdir
         )
         if isdefined(mod, funname)
             dir = getproperty(mod, funname)()
-            mkpath(dir)
+            !isdir(dir) && mkpath(dir)
         end
     end
 end
