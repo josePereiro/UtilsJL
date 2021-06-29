@@ -35,14 +35,14 @@ end
 function cfname(arg, args...)
 
     isempty(args) && (arg isa AbstractString) && 
-        is_cfname(arg) && return basename(arg)
+        is_cfname(basename(arg)) && return basename(arg)
     
     _hash = hash(hash.((arg, args...)))
     cfile = dfname((;hash = _hash), CFNAME_EXT)
     return cfile
 end
 
-cfname() = cfname(rand(), tempname())
+cfname() = cfname(time(), rand())
 
 ## ----------------------------------------------------------------------------
 function scache(dat, dirs::Vector{<:AbstractString}, arg, args...; 
@@ -80,21 +80,23 @@ scache(f::Function; kwargs...) =
     scache(f(), [get_cache_dir()], time(), rand(); kwargs...)
 
 ## ----------------------------------------------------------------------------
-function _lcache(f::Function, savecache::Bool, cfile::String; 
+function _lcache(f::Function, savecache::Bool, dirs::Vector{<:AbstractString}, arg, args...; 
         headline::AbstractString = "CACHE LOADED",
         verbose::Bool = get_verbose(), 
         onerr::Function = (err) -> rethrow(err),
         print_fun::Function = get_print_fun(), 
         mkdir::Bool = false
     )
+    
+    cfile = cfname(arg, args...)
+    cfile = joinpath(dirs..., cfile)
     try
         mkdir && mkpath(dirname(cfile))
         dat = isfile(cfile) ? deserialize(cfile)[DATA_KEY] : f()
-        savecache && scache(dat, cfile; verbose, onerr, print_fun)
+        savecache && scache(dat, dirs, arg, args...; verbose, onerr, print_fun)
         verbose && _io_print(print_fun, headline, dat, cfile)
         return dat
     catch err
-        @info cfile
         verbose && _io_error_print(print_fun, err, cfile)
         return onerr(err)
     end
@@ -103,18 +105,14 @@ end
 function lcache(f::Function, dirs::Vector{<:AbstractString}, arg, args...; 
         kwargs...
     ) 
-    cfile = cfname(arg, args...)
-    cfile = joinpath(dirs..., cfile)
-    _lcache(f, true, cfile; kwargs...)
+    _lcache(f, true, dirs, arg, args...; kwargs...)
 end
 
 lcache(f::Function, arg, args...; kwargs...) = 
     lcache(f::Function, [get_cache_dir()], arg, args...; kwargs...)
 
 function lcache(dirs::Vector{<:AbstractString}, arg, args...; kwargs...) 
-    cfile = cfname(arg, args...)
-    cfile = joinpath(dirs..., cfile)
-    _lcache(() -> nothing, false, cfile; kwargs...)
+    _lcache(() -> nothing, false, dirs, arg, args...; kwargs...)
 end
 
 lcache(arg, args...; kwargs...) = 

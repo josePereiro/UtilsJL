@@ -98,7 +98,6 @@ function _filtertree_th(f, root; nths, kwargs...)
         end
         false
     end
-    @show length.(founds_pool)
     vcat(founds_pool...)
 end
 
