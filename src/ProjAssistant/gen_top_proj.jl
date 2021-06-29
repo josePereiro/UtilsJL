@@ -9,6 +9,7 @@ function _check_symbols(mod, symbols)
     end
 end
 
+# ---------------------------------------------------------------------
 function gen_top_proj(mod::Module, dir = nothing)
 
     if isnothing(dir)
@@ -87,3 +88,21 @@ function gen_top_proj(mod::Module, dir = nothing)
     end
    
 end
+
+# ---------------------------------------------------------------------
+macro gen_top_proj()
+    quote $(gen_top_proj)(@__MODULE__) end
+end
+
+macro gen_top_proj(dirkw)
+    # get dir
+    validarg = Meta.isexpr(dirkw, :(=)) 
+    k, dir = dirkw.args
+    validarg &= (k == :dir) && (dir isa AbstractString)
+    !validarg &&
+        error("An expression `dir=path::AbstractString` is expected")
+    
+    quote $(gen_top_proj)(@__MODULE__, $dir) end
+end
+
+

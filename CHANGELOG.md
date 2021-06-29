@@ -12,7 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `PlotsUtils`: rename `mysavefig` to `sfig`.
 
 - `ProjAssistant`: Redefined save/load cache functions. Use a `Vector{AbstractString}` argument for
-signaling a directory to join. Move away from [DrWatson] `tagsave`, `tag!` is now the only remaining dep. 
+signaling a directory to join. Move away from [DrWatson] `tagsave`, `tag!` is now the only remaining dep.
+Add proj generator macros.
 
 - `GeneralUtils`: [WIP] add `IterChunck` iterator implementation.
 `get_chunks` was reimplemented and renamed to `chuncks(iter::Vector)`. Move `DictTree` from `ProjAssistant`.

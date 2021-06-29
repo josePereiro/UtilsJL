@@ -80,3 +80,9 @@ function gen_sub_proj(currmod::Module)
     
 end
 
+# ---------------------------------------------------------------------
+macro gen_sub_proj()
+    quote $(gen_sub_proj)(@__MODULE__) end
+end
+
+

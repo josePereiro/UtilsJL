@@ -10,6 +10,12 @@ function create_proj_dirs(mod::Module)
     end
 end
 
+# ---------------------------------------------------------------------
+macro create_proj_dirs()
+    quote $(create_proj_dirs)(@__MODULE__) end
+end
+
+
 # TODO: Transform to your layout
 # function print_proj_layout()
 #     """
