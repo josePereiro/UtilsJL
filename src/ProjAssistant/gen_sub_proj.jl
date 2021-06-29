@@ -1,9 +1,8 @@
 
-function gen_sub_proj(currmod::Module)
+function gen_sub_proj(currmod::Module, parentmod = parentmodule(currmod))
 
     # ---------------------------------------------------------------------
     # Check parenthood
-    parentmod = parentmodule(currmod)
     !isdefined(parentmod, :projectname) && 
         error("Parent module ($(parentmod)) is not a project.")
 
@@ -85,4 +84,13 @@ macro gen_sub_proj()
     quote $(gen_sub_proj)(@__MODULE__) end
 end
 
+macro gen_sub_proj(dirkw)
+    # get dir
+    validarg = Meta.isexpr(dirkw, :(=)) 
+    k, parent = dirkw.args
+    validarg &= (k == :parent) && (parent isa Symbol)
+    !validarg && error("An expression `parent=mod::Module` is expected, got ", dirkw)
+    
+    quote $(gen_sub_proj)(@__MODULE__, $(esc(parent))) end
+end
 

@@ -102,7 +102,7 @@ macro gen_top_proj(dirkw)
     !validarg &&
         error("An expression `dir=path::AbstractString` is expected")
     
-    quote $(gen_top_proj)(@__MODULE__, $dir) end
+    quote $(gen_top_proj)(@__MODULE__, $(esc(dir))) end
 end
 
 

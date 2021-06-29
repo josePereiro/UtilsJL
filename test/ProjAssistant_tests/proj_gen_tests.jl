@@ -1,10 +1,16 @@
 ## ------------------------------------------------------------
 # gen proj test
-_TopMod = Symbol("Top", rand(UInt))
-_SubMod = Symbol("Sub", _TopMod)
-_TopDir = joinpath(tempdir(), string(_TopMod))
-rm(_TopDir; force = true, recursive = true)
+_TO_REMOVE = []
 for fun_flag in [true, false]
+
+    RTAG = string(rand(UInt))
+    TopMod = Symbol("Top", RTAG)
+    Sub1Mod = Symbol("Sub1")
+    Sub2Mod = Symbol("Sub2")
+    Sub3Mod = Symbol("Sub3")
+    TopDir = joinpath(tempdir(), string(TopMod))
+    rm(TopDir; force = true, recursive = true)
+    push!(_TO_REMOVE, TopDir)
     try
         # ---------------------------------------------------------------------
         # verbose
@@ -12,12 +18,12 @@ for fun_flag in [true, false]
 
         # ---------------------------------------------------------------------
         # prepare test "project"
-        @info("Test project", _TopMod, _SubMod, _TopDir)
-        @eval module $(_TopMod)
+        @info("Test project", TopMod, Sub1Mod, TopDir)
+        @eval module $(TopMod)
 
             import UtilsJL
-            if $(fun_flag); UtilsJL.ProjAssistant.gen_top_proj(@__MODULE__, $(_TopDir))
-                else; UtilsJL.ProjAssistant.@gen_top_proj dir=$(_TopDir)
+            if $(fun_flag); UtilsJL.ProjAssistant.gen_top_proj(@__MODULE__, $(TopDir))
+                else; UtilsJL.ProjAssistant.@gen_top_proj dir=$(TopDir)
             end
             
             function __init__()
@@ -26,12 +32,32 @@ for fun_flag in [true, false]
                 end
             end
 
-            module $(_SubMod)
+            module $(Sub1Mod)
 
                 import UtilsJL
                 if $(fun_flag); UtilsJL.ProjAssistant.gen_sub_proj(@__MODULE__)
                     else; UtilsJL.ProjAssistant.@gen_sub_proj
                 end
+
+                module $(Sub2Mod)
+                    
+                    module $(Sub3Mod)
+
+                        import Main.$(TopMod).$(Sub1Mod)
+                        import UtilsJL
+                        
+                        if $(fun_flag); UtilsJL.ProjAssistant.gen_sub_proj(@__MODULE__, $(Sub1Mod))
+                            else; UtilsJL.ProjAssistant.@gen_sub_proj(parent=$(Sub1Mod))
+                        end
+
+                        function __init__()
+                            if $(fun_flag); UtilsJL.ProjAssistant.create_proj_dirs(@__MODULE__)
+                                else; UtilsJL.ProjAssistant.@create_proj_dirs
+                            end
+                            
+                        end
+                    end
+                end # module $(Sub2Mod)
 
                 function __init__()
                     if $(fun_flag); UtilsJL.ProjAssistant.create_proj_dirs(@__MODULE__)
@@ -39,18 +65,20 @@ for fun_flag in [true, false]
                     end
                     
                 end
-            end
+            end # module $(Sub1Mod)
         end
 
-        Top = getproperty(Main, _TopMod)
-        Sub = getproperty(Top, _SubMod)
+        Top = getproperty(Main, TopMod)
+        Sub1 = getproperty(Top, Sub1Mod)
+        Sub2 = getproperty(Sub1, Sub2Mod)
+        Sub3 = getproperty(Sub2, Sub3Mod)
 
         ## ------------------------------------------------------------
         # Test
         @testset "gen_projects" begin
 
             ## ------------------------------------------------------------
-            # TopDirs
+            # TopMod
             for funname in (
                     :projectdir,
                     :devdir, :datdir, :srcdir, :plotsdir, :scriptsdir, :papersdir,
@@ -64,25 +92,33 @@ for fun_flag in [true, false]
                 @test df == fun(df)
             end
 
-            # SubDirs
-            for funname in (
-                    :plotsdir, :scriptsdir,
-                    :procdir, :rawdir, :cachedir,  
-                )
-                fun = getproperty(Sub, funname)
-                @test isdir(fun())
+            # SubMod
+            for Mod in [Sub1, Sub3]
+                for funname in (
+                        :plotsdir, :scriptsdir,
+                        :procdir, :rawdir, :cachedir,  
+                    )
+                    fun = getproperty(Mod, funname)
+                    @test isdir(fun())
 
-                df = fun("bla", (;A = 1), "jls")
-                @test UtilsJL.ProjAssistant.isvalid_dfname(df)
-                @test df == fun(df)
+                    df = fun("bla", (;A = 1), "jls")
+                    @test UtilsJL.ProjAssistant.isvalid_dfname(df)
+                    @test df == fun(df)
+
+                    sub1fun = getproperty(Sub1, funname)
+                    sub3fun = getproperty(Sub3, funname)
+
+                    @test sub1fun() == dirname(sub3fun())
+                end
             end
 
             @test Top.istop_proj()
-            @test !Sub.istop_proj()
+            @test !Sub1.istop_proj()
+            @test !Sub3.istop_proj()
 
             ## ------------------------------------------------------------
             # save/load data
-            for Mod in [Top, Sub]
+            for Mod in [Top, Sub1, Sub3]
                 @info("save/load data", Mod)
                 mkdir = true
                 for (sfunsym, lfunsym) in [
@@ -122,7 +158,7 @@ for fun_flag in [true, false]
             ## ------------------------------------------------------------
             # save/load cache
             @info("Top cache")
-            for Mod in [Top, Sub]
+            for Mod in [Top, Sub1, Sub3]
 
                 @info("save/load cache", Mod)
                 scache = Mod.scache
@@ -148,6 +184,6 @@ for fun_flag in [true, false]
         Top
 
     finally
-        rm(_TopDir; force = true, recursive = true)
-    end;
+        rm.(_TO_REMOVE; force = true, recursive = true)
+    end
 end
