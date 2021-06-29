@@ -45,7 +45,7 @@ watch(m) do dat
         color = rand([:red, :green, :blue])
     )
     figfile = joinpath(dirname(m.file), "fig1.png")
-    savefig(p, figfile)
+    sfig(p, figfile)
 end
 
 # Fake job to monitor (All is tread save by default)
@@ -98,7 +98,7 @@ watch(m) do dat
         color = rand([:red, :green, :blue])
     )
     figfile = joinpath(dirname(m.file), "fig1.png")
-    savefig(p, figfile)
+    sfig(p, figfile)
 end
 ```
 """

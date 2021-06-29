@@ -1,10 +1,10 @@
-function savefig(p, args...)
+function sfig(p, args...)
     file = dfname(args...)
     Plots.savefig(p, file)
     return file
 end
 
-function savefig(ps::Vector, args...; 
+function sfig(ps::Vector, args...; 
         layout = _auto_layout(length(ps)), 
         margin = 10
     )

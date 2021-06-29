@@ -8,7 +8,6 @@ struct IterChunck{T}
         new{typeof(iter)}(iter, state0, len)
     IterChunck(iter, len) = IterChunck(iter, nothing, len)
 end
-Base.eltype(::IterChunck{T}) where {T} = eltype(T)
 Base.eltype(chnk::IterChunck) = eltype(chnk.iter)
 Base.length(chnk::IterChunck) = chnk.len
 function Base.iterate(chnk::IterChunck) 
