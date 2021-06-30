@@ -24,9 +24,11 @@ Moved `DictTree` from `ProjAssistant`.
 
 - `GeneralUtils`:
 Add `IterChunck` iterator implementation.
-`get_chunks` was reimplemented and renamed to `chuncks`. 
+`get_chunks` was reimplemented and renamed to `chunks` (now yield an `Generator`).
 A general (expensive) and a `AbstractArray` (lazy) implementation of
-`chuncks` is provided.
+`chunks` is provided.
+This is very similar to `Iterators.partition`, but each element is `IterChunk`
+which makes it even lazier.
 Tests added.
 
 - `ProjAssistant`:

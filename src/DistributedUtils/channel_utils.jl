@@ -1,24 +1,3 @@
-function chunckedChannel(f::Function, 
-    iter, chuncksize::Int, 
-    ChT::Type = Any, buffsize::Int = nthreads(); 
-    chkwargs...
-)
-return Channel{ChT}(buffsize; chkwargs...) do _Ch
-    chunk = eltype(iter)[]
-    for itelm in iter
-        push!(chunk, f(itelm))
-        if length(chunk) == chuncksize
-            put!(_Ch, chunk)
-            chunk = eltype(iter)[]
-        end
-    end
-    !isempty(chunk) && put!(_Ch, chunk)
-    return nothing
-end
-end
-chunckedChannel(iter, chuncksize::Int; kwargs...) = 
-chunckedChannel(identity, iter, chuncksize; kwargs...)
-
 # ------------------------------------------------------------
 function threadchannel(fun::Function, Ch::Channel; 
         nthrs::Int = nthreads(),

@@ -44,39 +44,43 @@ end
 
 ## ------------------------------------------------------
 # general implementation needs to make a full iteration
-function chuncks(chnkend::Function, iter)
+function chunks(chnkend::Function, iter)
 
-    chnks = IterChunck{typeof(iter)}[]
     state0 = nothing
     last_state = nothing
     count = 0
     next = iterate(iter)
-    while next !== nothing
-        (elem, state) = next
-        isend = chnkend(elem, state, count)
-        isend && iszero(count) && error(
-            "chnkend(elem, state, count)::Bool should not return false if count == 0"
-        )
+    hasnext(x...) = !isnothing(next)
+    geniter = Iterators.takewhile(hasnext, Iterators.countfrom())
+    return Base.Generator(geniter) do _
 
-        if isend
-            chnk = IterChunck(iter, state0, count)
-            push!(chnks, chnk)
-            state0 = last_state
-            count = 0
+        while true
+            (elem, state) = next
+            isend = chnkend(elem, state, count)
+            isend && iszero(count) && error(
+                "chnkend(elem, state, count)::Bool should not return false if count == 0"
+            )
+
+            # new chunk
+            if isend
+                chnk = IterChunck(iter, state0, count)
+                state0 = last_state
+                count = 0
+                return chnk
+            end
+
+            count += 1 
+            last_state = state
+            next = iterate(iter, state)
+
+            # last chunk
+            if isnothing(next) && !iszero(count)
+                chnk = IterChunck(iter, state0, count)
+                return chnk
+            end    
         end
 
-        count += 1 
-        last_state = state
-        next = iterate(iter, state)
     end
-    
-    # last chnk
-    if !iszero(count)
-        chnk = IterChunck(iter, state0, count)
-        push!(chnks, chnk)
-    end
-
-    chnks
 end
 
 ## ------------------------------------------------------
@@ -90,7 +94,7 @@ function _resolve_layout(iter, chnklen, nchnks)
     
     # Layout not specified
     ((chnklen <= 0) && (nchnks <= 0)) && 
-        error("You must provide a layout (e.g. chnklen). Use ?chuncks for details")
+        error("You must provide a layout (e.g. chnklen). Use ?chunks for details")
 
     
     if (SizeType isa Base.SizeUnknown)
@@ -115,16 +119,17 @@ _get_default_ischnkend(chnklen) = (elem, state, count) -> (chnklen == count)
 
 ## ------------------------------------------------------------------
 # general implementation needs to make a full iteration
-function chuncks(iter; chnklen::Int = -1, nchnks::Int = -1)
+function chunks(iter; chnklen::Int = -1, nchnks::Int = -1)
     chnklen, _ = _resolve_layout(iter, chnklen, nchnks)
     chnkend = _get_default_ischnkend(chnklen)
-    return chuncks(chnkend, iter)
+    return chunks(chnkend, iter)
 end
 
 ## ------------------------------------------------------
 # For the AbstractArray interface `view` is used for performance
-_chnkrange(chnki, chnklen, iterlen) = (chnki*chnklen + 1):min(iterlen, (chnki*chnklen + chnklen))
-function chuncks(iter::AbstractArray; 
+_chnkrange(iter::AbstractArray, chnki, chnklen, iterlen) = 
+    (chnki*chnklen + firstindex(iter)):min(iterlen, (chnki*chnklen + chnklen))
+function chunks(iter::AbstractArray; 
         chnklen::Int = -1, nchnks::Int = -1
     )
     
@@ -132,10 +137,25 @@ function chuncks(iter::AbstractArray;
     
     iterlen = length(iter)
     state0 = nothing
-    map(0:(nchnks - 1)) do chnki
-        chnkrange = _chnkrange(chnki, chnklen, iterlen)
+    Base.Generator(0:(nchnks - 1)) do chnki
+        chnkrange = _chnkrange(iter, chnki, chnklen, iterlen)
         chnkleni = length(chnkrange)
         iteri = view(iter,chnkrange)
         IterChunck(iteri, state0, chnkleni)
+    end
+end
+
+## ------------------------------------------------------
+function chunkedChannel(iter;
+        chnklen::Int = -1, nchnks::Int = -1,
+        buffsize::Int = Base.Threads.nthreads(),
+        chkwargs...
+    )
+
+    chunkgens = chunks(iter; chnklen, nchnks)
+    return Channel{eltype(chunkgens)}(buffsize; chkwargs...) do _Ch
+        for chunk in chunkgens
+            put!(_Ch, chunk)
+        end
     end
 end
