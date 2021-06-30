@@ -9,20 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- `PlotsUtils`: rename `mysavefig` to `sfig`.
+- `PlotsUtils`:
+rename `mysavefig` to `sfig`.
 
-- `ProjAssistant`: Redefined save/load cache functions. Use a `Vector{AbstractString}` argument for
+- `ProjAssistant`:
+Redefined save/load cache functions. Use a `Vector{AbstractString}` argument for
 signaling a directory to join. Move away from [DrWatson] `tagsave`, `tag!` is now the only remaining dep.
-Add proj generator macros.
 
-- `GeneralUtils`: [WIP] add `IterChunck` iterator implementation.
-`get_chunks` was reimplemented and renamed to `chuncks(iter::Vector)`. Move `DictTree` from `ProjAssistant`.
+- `GeneralUtils`:
+Moved `DictTree` from `ProjAssistant`.
+
 
 ### Added
 
-- `ProjAssistant`: Project generator functions now includes project specific save/load general and cache data functions.
+- `GeneralUtils`:
+Add `IterChunck` iterator implementation.
+`get_chunks` was reimplemented and renamed to `chuncks`. 
+A general (expensive) and a `AbstractArray` (lazy) implementation of
+`chuncks` is provided.
+Tests added.
 
-- `ProjAssistant`: Project generator functions tests added.
+- `ProjAssistant`:
+Project generator macros added.
+Project generator functions now includes project specific save/load general and cache data functions.
+Project generator functions tests added.
 
 ## [0.8.0] - 2021-06-24 [YANKED]
 

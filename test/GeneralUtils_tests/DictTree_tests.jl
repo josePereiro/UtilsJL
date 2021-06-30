@@ -1,5 +1,4 @@
-function DictTree_tests()
-    
+let 
     D = UtilsJL.GeneralUtils.DictTree()
     D['A', 'A'] = rand()
     D['A', 'B'] = rand()
@@ -19,6 +18,4 @@ function DictTree_tests()
     @test haskey(D, 1, 2, 3)
     @test haskey(D, 1, 2, 3, 4)
     @test !haskey(D, 1, 3, 4)
-
 end
-DictTree_tests()
