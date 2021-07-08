@@ -6,7 +6,7 @@ module ProjAssistant
                         tryparse_dfname, isvalid_dfname
     import Logging
     import Logging: SimpleLogger, global_logger, with_logger
-    import Base.Threads: @threads
+    using Base.Threads
     import Serialization: serialize, deserialize
     import FileIO
     import ..GeneralUtils: err_str
