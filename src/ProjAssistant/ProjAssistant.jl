@@ -1,12 +1,14 @@
 module ProjAssistant
 
     import DrWatson
+    import DataFileNames
     import DataFileNames: dfname, parse_dfname, 
                         tryparse_dfname, isvalid_dfname
     import Logging
     import Logging: SimpleLogger, global_logger, with_logger
     import Base.Threads: @threads
     import Serialization: serialize, deserialize
+    import FileIO
     import ..GeneralUtils: err_str
 
     include("_io_print.jl")

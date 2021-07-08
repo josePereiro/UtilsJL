@@ -11,6 +11,7 @@ end
 
 ## ----------------------------------------------------------------------------
 function _make_mat(imgs)
+    isempty(imgs) && error("imgs is empty")
     length(unique!(size.(imgs))) != 1 && error("All imgs must have the same size")
     
     w, h = size(first(imgs))
@@ -24,7 +25,7 @@ end
 
 ## ----------------------------------------------------------------------------
 _def_fn() = string(tempname(), ".gif")
-function save_gif(imgs::Vector, fn::String = _def_fn(); 
+function _save_gif(imgs::Vector, fn::String = _def_fn(); 
         fps = 10.0
     ) 
     !endswith(fn, ".gif") && error("filename must end with .gif")
@@ -34,12 +35,15 @@ function save_gif(imgs::Vector, fn::String = _def_fn();
     fn
 end
 
+save_gif(imgs::Vector, fn::String = _def_fn(); fps = 10.0) = 
+    _save_gif(imgs, fn; fps) 
+
 function save_gif(ps::Vector{T}, fn::String = _def_fn(); 
         fps = 10.0
     ) where {T<:AbstractPlot}
     
     imgs = plot_to_img.(ps)
-    save_gif(imgs, fn; fps)
+    _save_gif(imgs, fn; fps)
 end
 
 function save_gif(sourcepaths::Vector{String}, fn::String = _def_fn(); 

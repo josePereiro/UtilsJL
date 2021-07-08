@@ -44,6 +44,19 @@ function gen_sub_proj(currmod::Module, parentmod = parentmodule(currmod))
     end
     
     # ---------------------------------------------------------------------
+    # ls fun
+    for funname in [:plotsdir, :scriptsdir, :procdir, :rawdir, :cachedir]
+        lsfun = Symbol(:ls, funname)
+        @eval currmod begin 
+            function $lsfun(args...)
+                dir = $(funname)(args...)
+                fs = readdir(dir)
+                println(join(fs, "\n"))
+            end
+        end
+    end
+
+    # ---------------------------------------------------------------------
     # save/load dat
     @eval currmod begin 
         sprocdat(f::Function, arg, args...; kwargs...) = $(sdat)(f, procdir(arg, args...); kwargs...)
@@ -74,7 +87,41 @@ function gen_sub_proj(currmod::Module, parentmod = parentmodule(currmod))
         lcache(arg, args...; kwargs...) = $(lcache)([cachedir()], arg, args...; kwargs...)
         lcache(f::Function, arg, args...; kwargs...) = $(lcache)(f, [cachedir()], arg, args...; kwargs...)
         
-        delcache(arg, args...; kwargs...) = $(delcache)([cachedir()], arg, args...; kwargs...)
+        delcache(args...; kwargs...) = $(delcache)([cachedir()], args...; kwargs...)
+    end
+
+    # ---------------------------------------------------------------------
+    # globals
+    @eval currmod begin
+
+        const _GLOBALS_EXT = ".global.jls"
+        _global_file(gid) = procdir(string(gid), _GLOBALS_EXT)
+
+        function lglob(gid::Symbol)
+            fname = _global_file(gid)
+            !isfile(fname) && error("global is missing, gid '", gid, "'")
+            return ldat(fname; verbose = false)
+        end
+
+        lglob(gid::Symbol, gids::Symbol...) = map(lglob, (gid, gids...))
+
+        ## ------------------------------------------------------------
+        function sglob(dat, gid::Symbol)
+            fname = _global_file(gid)
+            sdat(dat, fname; verbose = false)
+        end
+
+        function sglob(;kwargs...)
+            for (gid, dat) in kwargs
+                sglob(dat, gid)
+            end
+        end
+
+        sglob(f::Function, gid::Symbol) = sglob(f(), gid)
+
+        ## ------------------------------------------------------------
+        delglob(gid::Symbol) = rm(_global_file(gid); force = true)
+
     end
     
 end
