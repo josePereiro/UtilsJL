@@ -142,6 +142,7 @@ function grad_desc_vec!(f::Function, gdmodel::GDModel{T};
                         ("ϵᵢ", gdmodel.ϵi),
                         ("sense", gdmodel.sense),
                         ("xᵢ", gdmodel.xi),
+                        ("Δxᵢ", gdmodel.Δx),
                         ("t", gdmodel.target),
                         ("fi", gdmodel.fi),
                     ], toshow

@@ -132,5 +132,3 @@ macro gen_top_proj(dirkw)
     
     quote $(gen_top_proj)(@__MODULE__, $(esc(dir))) end
 end
-
-

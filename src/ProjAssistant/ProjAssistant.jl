@@ -1,9 +1,7 @@
 module ProjAssistant
 
+    using DataFileNames
     import DrWatson
-    import DataFileNames
-    import DataFileNames: dfname, parse_dfname, 
-                        tryparse_dfname, isvalid_dfname
     import Logging
     import Logging: SimpleLogger, global_logger, with_logger
     using Base.Threads
@@ -12,6 +10,7 @@ module ProjAssistant
     import ..GeneralUtils: err_str
 
     include("_io_print.jl")
+    include("io_global_conf.jl")
     include("_save_load.jl")
     include("scache_lcache.jl")
     include("sdat_ldat.jl")
